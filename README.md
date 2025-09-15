@@ -1,1 +1,1 @@
-# Automated-Threat-Modeling-using-Artificial-Intelligence-
+# Research-Automated-Threat-Modeling-using-AI
