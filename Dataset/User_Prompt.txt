@@ -1,0 +1,1 @@
+As a user, I want to log in with my Google account (OAuth 2.0) via the Angular frontend so that I can securely access application features served by the Node.js/Express backend, which stores data in SQLite/NoSQL and serves files from the content folder.

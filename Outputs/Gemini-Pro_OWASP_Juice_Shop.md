@@ -1,0 +1,231 @@
+# STRIDE Threat Modeling Report
+
+## 1. Spoofing - User Identity (Google OAuth 2.0)
+- **ID**: 1
+- **Issue_key**: US-1
+- **Security_Task_ID**: 101
+- **STRIDE Category**: Spoofing
+- **Assets**: User Identity (Google OAuth 2.0)
+- **Threat Description**: An attacker could intercept or manipulate the OAuth 2.0 flow to impersonate a legitimate user and gain unauthorized access to the application.
+- **Risk**: High (E1=Yes, E2=No, E3=No, D1=No, D2=No, D3=No, D4=Yes, N1=2, N2=2)
+- **Security Task Title**: Implement Robust OAuth 2.0 State Parameter Verification
+- **User Story Acceptance Criteria as Mitigation**:
+    - The Angular frontend MUST generate a unique and cryptographically strong `state` parameter for each OAuth 2.0 authorization request.
+    - The Angular frontend MUST store the `state` parameter securely (e.g., in `localStorage` or `sessionStorage` with appropriate expiry) before redirecting to Google's authorization endpoint.
+    - The Node.js/Express backend, upon receiving the callback from Google, MUST verify that the `state` parameter in the callback matches the `state` parameter previously sent by the frontend.
+    - The backend MUST reject any callback request where the `state` parameter is missing, invalid, or does not match the expected value.
+    - The `state` parameter MUST be single-use and invalidated after successful verification or after a reasonable timeout.
+- **NIST CFS Reference**: PR.AC-07: Access enforcement based on assigned authorizations. PR.PT-03: Security functions are isolated from non-security functions.
+- **ISO 27001**: A.9.2.3: Password management system. A.9.4.1: Information access restriction. A.14.2.5: Secure system engineering principles.
+- **PCI DSS Reference**: Requirement 8.2: Implement strong authentication and security measures for non-console administrative access and all remote access to the CDE. Requirement 6.3: Develop internal and external software applications, including web applications, to be secure.
+- **HIPAA**: 164.306(a)(1): Security standards: General rules. 164.312(a)(1): Access control.
+- **SOC 2**: CC6.1: The entity implements controls to prevent or detect unauthorized changes to data. CC6.2: The entity implements controls to prevent or detect unauthorized access to data.
+- **OWASP**: OWASP Top 10 - A07:2021-Identification and Authentication Failures. OWASP Top 10 - A04:2021-Insecure Design.
+- **GDPR**: Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures.
+
+## 2. Elevation of Privilege - Backend API Endpoints
+- **ID**: 2
+- **Issue_key**: US-2
+- **Security_Task_ID**: 102
+- **STRIDE Category**: Elevation of Privilege
+- **Assets**: Backend API Endpoints
+- **Threat Description**: A malicious user could bypass authorization checks on the Node.js/Express backend and access features or data they are not authorized for, escalating their privileges.
+- **Risk**: High (E1=Yes, E2=Yes, E3=No, D1=No, D2=Yes, D3=No, D4=Yes, N1=3, N2=2)
+- **Security Task Title**: Implement Role-Based Access Control (RBAC) on Backend Endpoints
+- **User Story Acceptance Criteria as Mitigation**:
+    - All Node.js/Express backend API endpoints MUST have explicit authorization checks based on the user's role and permissions.
+    - The application MUST define clear roles (e.g., 'user', 'admin') and associate specific permissions with each role.
+    - Authentication middleware MUST extract user roles/permissions from the OAuth 2.0 token (after validation) and attach them to the request object.
+    - Authorization middleware MUST be applied to each relevant endpoint, verifying that the authenticated user possesses the necessary role/permission to access the resource or perform the action.
+    - Access to sensitive operations (e.g., modifying user data, accessing admin features) MUST require specific, elevated permissions.
+- **NIST CFS Reference**: PR.AC-03: Access permissions are managed, incorporating the principles of least privilege and separation of duties. PR.AC-04: Network access control mechanisms are implemented. PR.AC-05: Identities are proofed and bound to credentials.
+- **ISO 27001**: A.9.4.1: Information access restriction. A.9.4.2: Secure log-on procedures. A.9.4.5: Network access control.
+- **PCI DSS Reference**: Requirement 7.1: Limit access to system components and cardholder data to only those individuals whose job requires such access. Requirement 7.2: Establish an access control system.
+- **HIPAA**: 164.308(a)(4)(ii)(C): Access control and validation procedures. 164.312(a)(1): Access control.
+- **SOC 2**: CC6.1: The entity implements controls to prevent or detect unauthorized changes to data. CC6.2: The entity implements controls to prevent or detect unauthorized access to data. CC6.3: The entity restricts physical access to facilities and data centers.
+- **OWASP**: OWASP Top 10 - A01:2021-Broken Access Control. OWASP Top 10 - A07:2021-Identification and Authentication Failures.
+- **GDPR**: Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures.
+
+## 3. Information Disclosure - Sensitive Data in SQLite/NoSQL
+- **ID**: 3
+- **Issue_key**: US-3
+- **Security_Task_ID**: 103
+- **STRIDE Category**: Information Disclosure
+- **Assets**: Sensitive Data in SQLite/NoSQL
+- **Threat Description**: An attacker could exploit vulnerabilities (e.g., SQL injection in SQLite, NoSQL injection) to retrieve sensitive user data or application secrets from the database.
+- **Risk**: High (E1=Yes, E2=Yes, E3=No, D1=No, D2=No, D3=No, D4=Yes, N1=1, N2=1)
+- **Security Task Title**: Implement Parameterized Queries and Input Validation for Database Interactions
+- **User Story Acceptance Criteria as Mitigation**:
+    - All database queries (SQLite/NoSQL) originating from the Node.js/Express backend MUST use parameterized queries or prepared statements to prevent injection attacks.
+    - The backend MUST implement strict input validation and sanitization for all user-supplied data before it is used in database queries or stored.
+    - Input validation MUST enforce expected data types, lengths, and formats, rejecting any unexpected or malicious input.
+    - Error messages returned to the frontend MUST be generic and MUST NOT disclose any sensitive database details or internal system information.
+    - Sensitive information, if stored in the database, MUST be encrypted at rest (e.g., PII, session tokens).
+- **NIST CFS Reference**: PR.IP-01: Data at rest is protected. PR.IP-03: Data in transit is protected. PR.DS-05: Integrity of software and firmware is maintained.
+- **ISO 27001**: A.10.1.1: Policy on the use of cryptographic controls. A.14.2.1: Secure development policy. A.14.2.4: System and application security testing.
+- **PCI DSS Reference**: Requirement 3.3: Mask PAN when displayed. Requirement 6.3: Develop internal and external software applications, including web applications, to be secure. Requirement 6.5: Address common coding vulnerabilities in software-development processes.
+- **HIPAA**: 164.306(a)(1): Security standards: General rules. 164.312(a)(2)(iv): Encryption and decryption. 164.312(e)(2)(i): Integrity controls.
+- **SOC 2**: CC6.1: The entity implements controls to prevent or detect unauthorized changes to data. CC6.2: The entity implements controls to prevent or detect unauthorized access to data.
+- **OWASP**: OWASP Top 10 - A03:2021-Injection. OWASP Top 10 - A04:2021-Insecure Design.
+- **GDPR**: Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures. Article 32: Security of processing.
+
+## 4. Tampering - OAuth 2.0 Tokens (Access/Refresh)
+- **ID**: 4
+- **Issue_key**: US-4
+- **Security_Task_ID**: 104
+- **STRIDE Category**: Tampering
+- **Assets**: OAuth 2.0 Tokens (Access/Refresh)
+- **Threat Description**: An attacker could steal or tamper with access/refresh tokens, allowing them to impersonate the user or maintain persistent unauthorized access.
+- **Risk**: High (E1=Yes, E2=No, E3=No, D1=No, D2=No, D3=No, D4=Yes, N1=2, N2=2)
+- **Security Task Title**: Implement Secure Token Storage and Transmission
+- **User Story Acceptance Criteria as Mitigation**:
+    - The Angular frontend MUST store access tokens in `HttpOnly` and `Secure` cookies to mitigate XSS attacks (or in memory if stateless, with careful consideration of short expiry).
+    - Refresh tokens, if used, MUST be stored with similar `HttpOnly` and `Secure` attributes and have strict rotation policies.
+    - All communication between the Angular frontend, Node.js/Express backend, and Google's OAuth 2.0 endpoints MUST be over HTTPS/TLS 1.2+.
+    - The Node.js/Express backend MUST invalidate compromised tokens immediately upon detection or user-initiated logout.
+    - Access tokens MUST have a short expiry, and refresh tokens (if used) MUST be rotated regularly and associated with specific client sessions.
+- **NIST CFS Reference**: PR.PT-03: Security functions are isolated from non-security functions. PR.DS-02: Data in transit is protected.
+- **ISO 27001**: A.10.1.1: Policy on the use of cryptographic controls. A.12.3.1: Information backup. A.14.2.5: Secure system engineering principles.
+- **PCI DSS Reference**: Requirement 4.1: Use strong cryptography and security protocols to protect sensitive cardholder data during transmission over open, public networks. Requirement 8.2: Implement strong authentication and security measures for non-console administrative access and all remote access to the CDE.
+- **HIPAA**: 164.312(a)(2)(iv): Encryption and decryption. 164.312(e)(1): Transmission security.
+- **SOC 2**: CC6.1: The entity implements controls to prevent or detect unauthorized changes to data. CC6.2: The entity implements controls to prevent or detect unauthorized access to data.
+- **OWASP**: OWASP Top 10 - A07:2021-Identification and Authentication Failures. OWASP Top 10 - A04:2021-Insecure Design.
+- **GDPR**: Article 32: Security of processing. Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures.
+
+## 5. Repudiation - User Actions/Auditing
+- **ID**: 5
+- **Issue_key**: US-5
+- **Security_Task_ID**: 105
+- **STRIDE Category**: Repudiation
+- **Assets**: User Actions/Auditing
+- **Threat Description**: A user could deny performing an action (e.g., data modification) due to a lack of proper logging or non-repudiation mechanisms.
+- **Risk**: Medium (E1=No, E2=No, E3=No, D1=No, D2=No, D3=No, D4=No, N1=1, N2=1)
+- **Security Task Title**: Implement Comprehensive Logging and Auditing of User Actions
+- **User Story Acceptance Criteria as Mitigation**:
+    - The Node.js/Express backend MUST log all significant user actions, including login/logout attempts, data modifications, and access to sensitive resources.
+    - Logs MUST include immutable information such as user ID, timestamp, action type, and outcome.
+    - Logs MUST be stored securely (e.g., write-once, append-only) and protected from unauthorized modification or deletion.
+    - Log files MUST be reviewed regularly for suspicious activity.
+    - All log entries MUST include sufficient detail to reconstruct the sequence of events and attribute actions to specific authenticated users.
+- **NIST CFS Reference**: DE.CM-03: Activities are logged. DE.AE-04: Incident analysis is performed. PR.PT-01: Audit and accountability processes are maintained.
+- **ISO 27001**: A.12.4.1: Event logging. A.12.4.3: Administrator and operator logs. A.12.4.4: Clock synchronization.
+- **PCI DSS Reference**: Requirement 10.1: Implement audit trails to link all access to system components to individual users. Requirement 10.2: Implement automated audit trails for all system components to reconstruct the following events.
+- **HIPAA**: 164.308(a)(1)(ii)(D): Information system activity review. 164.312(b): Audit controls.
+- **SOC 2**: CC7.1: The entity monitors the system and takes action to prevent or detect unauthorized access to data.
+- **OWASP**: OWASP Top 10 - A07:2021-Identification and Authentication Failures (for failed login attempts logging).
+- **GDPR**: Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures. Article 32: Security of processing.
+
+## 6. Denial of Service - Application Availability (Frontend/Backend)
+- **ID**: 6
+- **Issue_key**: US-6
+- **Security_Task_ID**: 106
+- **STRIDE Category**: Denial of Service
+- **Assets**: Application Availability (Frontend/Backend)
+- **Threat Description**: An attacker could flood the Node.js/Express backend with requests or exploit resource-intensive operations, leading to service unavailability.
+- **Risk**: Medium (E1=Yes, E2=No, E3=Yes, D1=No, D2=No, D3=Yes, D4=No, N1=2, N2=1)
+- **Security Task Title**: Implement Rate Limiting and Resource Protection
+- **User Story Acceptance Criteria as Mitigation**:
+    - The Node.js/Express backend MUST implement rate limiting on API endpoints to prevent excessive requests from a single IP address or user.
+    - Frontend static file serving (content folder) should ideally be handled by a CDN or a reverse proxy with DDoS protection.
+    - The backend MUST include mechanisms to detect and mitigate brute-force login attempts (e.g., account lockout, CAPTCHA after multiple failures).
+    - The application MUST be deployed behind a WAF (Web Application Firewall) capable of detecting and mitigating common DoS attack patterns.
+    - Monitoring and alerting systems MUST be in place to detect unusual traffic patterns or resource exhaustion indicative of a DoS attack.
+- **NIST CFS Reference**: PR.DS-04: Resiliency requirements for industrial control systems are established. RS.RP-01: Response plan is executed. PR.PT-02: Security configurations are managed.
+- **ISO 27001**: A.13.1.2: Information security for networks. A.17.2.1: Availability of information processing facilities. A.18.2.1: Independent review of information security.
+- **PCI DSS Reference**: Requirement 6.3: Develop internal and external software applications, including web applications, to be secure. Requirement 11.4: Use intrusion-detection and/or intrusion-prevention techniques to detect and/or prevent network intrusions.
+- **HIPAA**: 164.308(a)(7)(ii)(E): Data backup plan. 164.312(c)(1): Integrity.
+- **SOC 2**: CC9.2: The entity maintains a crisis management program to respond to disruptions and other business interruptions affecting the system.
+- **OWASP**: OWASP Top 10 - A04:2021-Insecure Design. OWASP Top 10 - A07:2021-Identification and Authentication Failures (for brute force).
+- **GDPR**: Article 32: Security of processing. Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures.
+
+## 7. Information Disclosure - Frontend Code/Dependencies
+- **ID**: 7
+- **Issue_key**: US-7
+- **Security_Task_ID**: 107
+- **STRIDE Category**: Information Disclosure
+- **Assets**: Frontend Code/Dependencies
+- **Threat Description**: The Angular frontend could have vulnerabilities (e.g., outdated libraries, exposed API keys) that an attacker could exploit to gain information or compromise the user's session.
+- **Risk**: Medium (E1=Yes, E2=No, E3=No, D1=No, D2=No, D3=No, D4=Yes, N1=1, N2=1)
+- **Security Task Title**: Implement Secure Frontend Development Practices
+- **User Story Acceptance Criteria as Mitigation**:
+    - The Angular frontend MUST use up-to-date versions of all libraries and frameworks, with regular vulnerability scanning of dependencies.
+    - API keys or sensitive configurations MUST NOT be hardcoded or exposed directly in the frontend code.
+    - Content Security Policy (CSP) MUST be implemented on the Angular application to mitigate Cross-Site Scripting (XSS) and data injection attacks.
+    - HTTP Strict Transport Security (HSTS) MUST be enabled for the domain serving the Angular application to enforce HTTPS.
+    - The frontend MUST not store sensitive user data (e.g., PII) in local storage without encryption and strong justification.
+- **NIST CFS Reference**: PR.IP-03: Data in transit is protected. PR.DS-05: Integrity of software and firmware is maintained. PR.PT-02: Security configurations are managed.
+- **ISO 27001**: A.14.2.1: Secure development policy. A.14.2.4: System and application security testing. A.12.6.2: Restrictions on software installation.
+- **PCI DSS Reference**: Requirement 6.3: Develop internal and external software applications, including web applications, to be secure. Requirement 6.4: Ensure that applications are protected by application-layer firewalls, web application firewalls, or other methods.
+- **HIPAA**: 164.306(a)(1): Security standards: General rules. 164.312(e)(1): Transmission security.
+- **SOC 2**: CC6.1: The entity implements controls to prevent or detect unauthorized changes to data.
+- **OWASP**: OWASP Top 10 - A05:2021-Security Misconfiguration. OWASP Top 10 - A06:2021-Vulnerable and Outdated Components. OWASP Top 10 - A03:2021-Injection (for XSS).
+- **GDPR**: Article 32: Security of processing. Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures.
+
+## 8. Tampering - Files in Content Folder
+- **ID**: 8
+- **Issue_key**: US-8
+- **Security_Task_ID**: 108
+- **STRIDE Category**: Tampering
+- **Assets**: Files in Content Folder
+- **Threat Description**: An attacker could upload malicious files or tamper with existing legitimate files in the content folder, potentially leading to XSS, defacement, or malware delivery.
+- **Risk**: Medium (E1=Yes, E2=Yes, E3=No, D1=No, D2=No, D3=No, D4=No, N1=1, N2=1)
+- **Security Task Title**: Implement Secure File Handling for Content Folder
+- **User Story Acceptance Criteria as Mitigation**:
+    - The Node.js/Express backend MUST implement strict input validation and sanitization for all file uploads, including file type, size, and content.
+    - Uploaded files MUST be scanned for malware before being stored and served.
+    - Files uploaded by users MUST be stored in a separate, non-executable directory, isolated from the application's executable code.
+    - The application MUST enforce appropriate Content-Type headers when serving files from the content folder to prevent browser misinterpretation.
+    - Access control mechanisms MUST be in place to prevent unauthorized modification or deletion of files in the content folder.
+- **NIST CFS Reference**: PR.IP-01: Data at rest is protected. PR.DS-05: Integrity of software and firmware is maintained.
+- **ISO 27001**: A.9.2.2: User access provisioning. A.14.2.1: Secure development policy. A.14.2.4: System and application security testing.
+- **PCI DSS Reference**: Requirement 6.3: Develop internal and external software applications, including web applications, to be secure. Requirement 6.4: Ensure that applications are protected by application-layer firewalls, web application firewalls, or other methods.
+- **HIPAA**: 164.312(c)(1): Integrity. 164.306(a)(1): Security standards: General rules.
+- **SOC 2**: CC6.1: The entity implements controls to prevent or detect unauthorized changes to data.
+- **OWASP**: OWASP Top 10 - A01:2021-Broken Access Control. OWASP Top 10 - A03:2021-Injection (for file path traversal/injection).
+- **GDPR**: Article 32: Security of processing. Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures.
+
+## 9. Information Disclosure - Configuration Files/Environment Variables
+- **ID**: 9
+- **Issue_key**: US-9
+- **Security_Task_ID**: 109
+- **STRIDE Category**: Information Disclosure
+- **Assets**: Configuration Files/Environment Variables
+- **Threat Description**: Sensitive configuration details (e.g., API keys, database credentials) could be exposed if not managed securely, leading to broader system compromise.
+- **Risk**: Low (E1=No, E2=No, E3=No, D1=No, D2=No, D3=No, D4=Yes, N1=2, N2=2)
+- **Security Task Title**: Implement Secure Configuration Management
+- **User Story Acceptance Criteria as Mitigation**:
+    - Sensitive configuration details (e.g., Google OAuth client secret, database credentials) MUST be stored in environment variables or a secure configuration management system, NOT hardcoded in the codebase.
+    - Production configuration MUST be distinct from development/testing configurations and follow the principle of least privilege.
+    - Access to environment variables and configuration files on the server MUST be restricted to authorized personnel only.
+    - The `.env` file or similar configuration files MUST be excluded from version control (e.g., via `.gitignore`).
+    - Regular audits of configuration settings MUST be performed to identify and remediate misconfigurations.
+- **NIST CFS Reference**: PR.PT-02: Security configurations are managed. PR.DS-05: Integrity of software and firmware is maintained.
+- **ISO 27001**: A.12.5.1: Installation of software on operational systems. A.14.2.5: Secure system engineering principles.
+- **PCI DSS Reference**: Requirement 2.2: Develop and maintain secure configuration standards for all system components. Requirement 2.4: Document configuration standards.
+- **HIPAA**: 164.306(a)(1): Security standards: General rules.
+- **SOC 2**: CC3.2: The entity maintains effective controls over changes to infrastructure, data, software, and procedures.
+- **OWASP**: OWASP Top 10 - A05:2021-Security Misconfiguration.
+- **GDPR**: Article 32: Security of processing. Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures.
+
+## 10. Denial of Service - Database (SQLite/NoSQL)
+- **ID**: 10
+- **Issue_key**: US-10
+- **Security_Task_ID**: 110
+- **STRIDE Category**: Denial of Service
+- **Assets**: Database (SQLite/NoSQL)
+- **Threat Description**: An attacker could perform resource-intensive queries or operations against the database, leading to performance degradation or database unavailability.
+- **Risk**: Low (E1=Yes, E2=Yes, E3=No, D1=No, D2=No, D3=Yes, D4=No, N1=1, N2=1)
+- **Security Task Title**: Optimize Database Queries and Implement Resource Limits
+- **User Story Acceptance Criteria as Mitigation**:
+    - All database queries MUST be optimized for performance, using appropriate indexing and avoiding full table scans where possible.
+    - The Node.js/Express backend MUST implement query timeouts to prevent long-running or runaway queries from monopolizing database resources.
+    - Database connections MUST be properly managed and pooled to prevent resource exhaustion.
+    - The database MUST be regularly backed up to enable quick recovery in case of data corruption or loss.
+    - Monitoring of database performance metrics (e.g., CPU, memory, query execution times) MUST be in place to detect and alert on anomalies.
+- **NIST CFS Reference**: PR.DS-04: Resiliency requirements for industrial control systems are established. RS.RP-01: Response plan is executed.
+- **ISO 27001**: A.12.3.1: Information backup. A.17.2.1: Availability of information processing facilities.
+- **PCI DSS Reference**: Requirement 12.5.2: Monitor and track all access to network resources and cardholder data.
+- **HIPAA**: 164.308(a)(7)(ii)(E): Data backup plan. 164.312(c)(1): Integrity.
+- **SOC 2**: CC9.2: The entity maintains a crisis management program to respond to disruptions and other business interruptions affecting the system.
+- **OWASP**: OWASP Top 10 - A04:2021-Insecure Design.
+- **GDPR**: Article 32: Security of processing. Article 5(1)(f): Processing shall be processed in a manner that ensures appropriate security of the personal data, including protection against unauthorized or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures.

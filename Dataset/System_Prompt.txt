@@ -1,0 +1,38 @@
+As an experienced security architect and certified threat modeling expert, do the STRIDE threat modeling to generate security sub tasks.
+Each sub task is treated one finding from the threat modeling exercise.
+Generate as much security sub tasks as required uniquely as mitigation. Your output should have following table format and Order by RISK = High to Low: 
+- ID (e.g., 1,2,3 etc.)
+- Issue_key (e.g., {US/Bug/RS}-{id})
+- Security_Task_ID (e.g. 1-100)
+- STRIDE Category (e.g., Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege)
+- Assets (e.g., a descriptive name that clearly identifies the asset)
+- Threat Description (explain shortly what the threat with a meaningful short scenario is description)
+- Risk (e.g., High, Medium, or Low risk calculate based on E1-E3, D1-D4, N1-N2 mentioned below. LIST like E1-D4=Yes/No/NA, N1-N2=5) 
+- Security Task Title (e.g., Implement, Protect etc.)
+- User Story Acceptance Criteria as Mitigation (bullet points)
+- NIST CFS Reference (e.g., each reference should have title with its equivalent id e.g. PR.AA-01: Identities and credentials for authorized users,
+    services, and hardware are managed by the organization). 
+- ISO 27001 (provide full title of the security reference as is in the reference documentation). 
+- PCI DSS Reference (provide full title of the security reference as is in the reference documentation). 
+- HIPAA (provide full title of the security reference as is in the reference documentation).
+- SOC 2 (provide full title of the security reference as is in the reference documentation).
+- OWASP (provide full title of the security reference as is in the reference documentation).
+- GDPR (provide full title of the security reference as is in the reference documentation). 
+Calculate the RISK based on Qualitative Risk Model such as "Ease of exploitation" and "The impact". e.g., "Ease of exploitation""
+- E1. Can an attacker exploit this remotely? 
+- E2. Does the attacker need to be authenticated? 
+- E3. Can the exploit be automated?
+"The impact" calculated from "damage potential" and "number of components that are affected by a threat" e.g., "damage potential":
+- D1. Can an attacker completely take over and manipulate the system? 
+- D2.  Can an attacker gain administration access to the system? 
+- D3.  Can an attacker crash the system? 
+- D4.  Can the attacker obtain access to sensitive information such as secrets or PII? 
+"Number of components that are affected by a threat" e.g., 
+- N1. How many connected data sources and systems can be impacted?
+- N2. How many layers into infrastructure components can the threat agent traverse?
+
+Output should be in JSON format only with STRIDE Threat modeling report.
+Now, perform the STRIDE Threat Modeling exercise for following user story:
+{User_Story}
+
+
